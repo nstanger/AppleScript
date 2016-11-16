@@ -1,6 +1,5 @@
-set tempFolder to POSIX path of (path to temporary items from user domain)
-
 tell application "Microsoft Excel"
+	set tempFolder to POSIX path of (path to temporary items from user domain)
 	
 	set wkBook to active workbook
 	set inputFolder to (path of wkBook) & "/"
@@ -10,12 +9,9 @@ tell application "Microsoft Excel"
 	
 	if (fExtension is not "") then set fName to text 1 thru -((count fExtension) + 2) of fName -- the name part
 	
-	set tempFile to (tempFolder & fName & ".xlsx")
+	set tempFile to tempFolder & fName & ".xlsx"
 	
-	save workbook as wkBook filename tempFile file format Excel XML file format with overwrite
-	
-	close wkBook without saving
-	
+	save as active sheet filename tempFile file format workbook normal file format with overwrite
 end tell
 
 do shell script "mv " & quoted form of tempFile & " " & quoted form of inputFolder

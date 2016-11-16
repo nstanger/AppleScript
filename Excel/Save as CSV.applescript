@@ -1,6 +1,5 @@
-set tempFolder to POSIX path of (path to temporary items from user domain)
-
 tell application "Microsoft Excel"
+	set tempFolder to POSIX path of (path to temporary items from user domain)
 	
 	set wkBook to active workbook
 	set inputFolder to (path of wkBook) & "/"
@@ -10,12 +9,9 @@ tell application "Microsoft Excel"
 	
 	if (fExtension is not "") then set fName to text 1 thru -((count fExtension) + 2) of fName -- the name part
 	
-	set tempFile to (tempFolder & fName & ".csv")
+	set tempFile to tempFolder & fName & ".csv"
 	
-	save workbook as wkBook filename tempFile file format CSV file format with overwrite
-	
-	close wkBook without saving
-	
+	save as active sheet filename tempFile file format CSV file format with overwrite
 end tell
 
 do shell script "/opt/local/bin/flip -u " & quoted form of tempFile
