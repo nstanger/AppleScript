@@ -1,21 +1,21 @@
 tell application "Microsoft Word"
+	set tempFolder to POSIX path of (path to temporary items from user domain)
 	
-	set wFolder to (path of active document)
-	set oldDelimiters to AppleScript's text item delimiters
-	set AppleScript's text item delimiters to {":"}
-	set pathItems to text items of wFolder
-	set wName to last item of pathItems
-	set wFolder to ((reverse of the rest of reverse of pathItems) as string) & ":"
-	set AppleScript's text item delimiters to oldDelimiters
+	set doc to active document
+	set inputFolder to (path of doc) & ":"
+	set inputName to (name of doc)
+	alias inputFolder
 	
-	tell application "System Events" to tell disk item (wFolder & wName) to set {fName, fExtension} to {name, name extension}
+	tell application "System Events" to tell disk item (inputFolder & inputName) to set {fName, fExtension} to {name, name extension}
 	
 	if (fExtension is not "") then set fName to text 1 thru -((count fExtension) + 2) of fName -- the name part
 	
-	set tName to wFolder & fName & ".docx"
+	set tempFile to (tempFolder & fName & ".docx")
 	
-	tell active document
-		save as file name tName file format format document with overwrite
-	end tell
+	save as doc file name tempFile file format format document with overwrite
+	
+	close doc without saving
 	
 end tell
+
+do shell script "mv " & quoted form of tempFile & " " & quoted form of POSIX path of inputFolder
