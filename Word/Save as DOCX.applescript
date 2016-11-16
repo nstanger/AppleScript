@@ -13,9 +13,6 @@ tell application "Microsoft Word"
 	set tempFile to (tempFolder & fName & ".docx")
 	
 	save as doc file name tempFile file format format document with overwrite
-	
-	close doc without saving
-	
 end tell
 
 do shell script "mv " & quoted form of tempFile & " " & quoted form of POSIX path of inputFolder

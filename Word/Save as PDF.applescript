@@ -13,7 +13,6 @@ tell application "Microsoft Word"
 	set tempFile to (tempFolder & fName & ".pdf")
 	
 	save as doc file name tempFile file format format PDF with overwrite
-	
 end tell
 
 do shell script "mv " & quoted form of tempFile & " " & quoted form of POSIX path of inputFolder
