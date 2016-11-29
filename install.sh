@@ -1,10 +1,11 @@
-#!/bin/tcsh
+#!/bin/bash
 
-set dir=$1
+/opt/local/bin/gfind . -name "*.applescript" -execdir osacompile -o "{}.scpt" "{}" \;
+/opt/local/bin/gfind . -name "*.scpt" -execdir rename-5.24 -force 's/\.applescript\.scpt/.scpt/' "{}" \;
+/opt/local/bin/rsync -av --exclude="*.applescript" Applications $HOME/Library/Scripts
+/opt/local/bin/rsync -av --exclude="*.applescript" "Script Libraries" $HOME/Library
 
-foreach infile ($dir/*.applescript)
-    set outfile=`basename $infile | sed -e 's/applescript$/scpt/'`
-    osacompile -o "$outfile" "$infile"
-    mkdir -p "$HOME/Library/Scripts/Applications/$dir"
-    mv "$outfile" "$HOME/Library/Scripts/Applications/$dir"
-end
+if [ "$1" = "--clean" ]
+then
+    /opt/local/bin/gfind -name "*.scpt" -delete
+fi
