@@ -1,5 +1,5 @@
 on run
-	set {year:theYear, month:theMonth, day:theDay} to (current date)
+	set {year:reportYear, month:reportMonth, day:reportDay} to (current date)
 	
 	tell script "Business Objects utilities"
 		if not checkBusinessObjects() then return
@@ -39,7 +39,7 @@ on run
 		
 		setNamedElement("RecipientAddresses", 0, "nigel.stanger@otago.ac.nz", "")
 		setNamedElement("Subject", 0, "Business Objects: " & theYear & " " & periodCode & " " & theMode & " CA", "")
-		setNamedElement("Attachment", 0, periodCode & "_" & theYear & "-" & theMonth * 1 & "-" & theDay & "_courseapproval.%EXT%", "")
+		setNamedElement("Attachment", 0, periodCode & "_" & reportYear & "-" & reportMonth * 1 & "-" & reportDay & "_courseapproval.%EXT%", "")
 		runJavaScript("SmtpFields();")
 		
 		if not waitForWindow("UO Business Objects: Report Scheduling") then return
