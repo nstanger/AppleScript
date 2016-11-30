@@ -101,9 +101,11 @@ on selectRadio(fieldNum, index)
 end selectRadio
 
 -- Editable text field.
-on setEditField(fieldNum, fieldValue, fieldLabel)
-	setNamedElement("editField" & fieldNum, 0, fieldValue, "paramEd[" & fieldNum & "].Changed('" & fieldLabel & "')")
-end setEditField
+-- Technically these have a .Changed() callback with an argument of the field label, but in practice
+-- this seems to be unnecessary (and breaks completely if the label happens to contain an apostrophe).
+on setTextField(fieldNum, fieldValue)
+	setNamedElement("editField" & fieldNum, 0, fieldValue, "")
+end setTextField
 
 -- Input parameters from keyboard.
 on pickKeyboard(fieldNum)
@@ -129,17 +131,17 @@ on chooseMultipleList(fieldNum, fieldValue)
 end chooseMultipleList
 
 -- Add a user-provided value to a list.
-on addTextToList(fieldNum, theText, fieldLabel)
-	setEditField(fieldNum, theText, fieldLabel)
+on addTextToList(fieldNum, theText)
+	setTextField(fieldNum, theText)
 	runJavaScript("paramEd[" & fieldNum & "].StoreDiscrete();")
 end addTextToList
 
 -- Load values into a multiple option pick list from a file.
 -- Needed because we can't set the value of a file picker input element from JavaScript :(.
-on loadMultipleListFromFile(fieldNum, fieldLabel, filePath)
+on loadMultipleListFromFile(fieldNum, filePath)
 	set itemList to paragraphs of (read filePath)
 	repeat with theItem in items 1 thru -2 of itemList -- skip empty line at end
-		addTextToList(fieldNum, theItem, fieldLabel)
+		addTextToList(fieldNum, theItem)
 	end repeat
 end loadMultipleListFromFile
 

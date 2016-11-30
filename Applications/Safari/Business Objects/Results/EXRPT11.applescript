@@ -22,22 +22,22 @@ on run
 		
 		-- Campus [Dunedin]
 		pickKeyboard(3)
-		addTextToList(3, "DN", "Campus(s)")
+		addTextToList(3, "DN")
 		
 		-- Group Campus? [no = 0]
 		selectRadio(4, 0)
 		
 		-- Paper Code [user specified]
 		pickKeyboard(5)
-		addTextToList(5, paperCode, "Paper(s) Wildcards can be used e.g MAT*, MAT_234")
+		addTextToList(5, paperCode)
 		
 		-- Teaching Period [user specified]
 		pickKeyboard(6)
-		addTextToList(6, periodCode, "Teaching Period(s)")
+		addTextToList(6, periodCode)
 		
 		-- Assessment Number [800]
 		pickKeyboard(7)
-		addTextToList(7, 800, "Assessment Number(s)")
+		addTextToList(7, 800)
 		
 		-- Marks to Include [actual (A) = 1 and agreed (G) = 2]
 		chooseMultipleList(8, 1)

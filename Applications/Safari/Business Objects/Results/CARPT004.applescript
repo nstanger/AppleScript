@@ -9,13 +9,11 @@ on run
 		set theMode to getMode()
 		
 		-- Academic Year [user specified]
-		-- This is a text field on this form.
-		setEditField(0, theYear, "Academic Year:")
+		setTextField(0, theYear)
 		
 		-- Paper Codes [from file]
 		pickKeyboard(1)
-		loadMultipleListFromFile(1, "Enter the Paper Code(s). Wildcards can be used e.g. ACCT1*:", Â
-			"/Users/nstanger/Documents/Teaching/Results/papers" & periodCode & ".txt")
+		loadMultipleListFromFile(1, "/Users/nstanger/Documents/Teaching/Results/papers" & periodCode & ".txt")
 		
 		-- Teaching Period [user specified]
 		chooseMultipleList(2, periodIndex)
@@ -34,7 +32,7 @@ on run
 		
 		-- Report Destination [email]
 		if not emailReport("nigel.stanger@otago.ac.nz", Â
-			"Business Objects: " & theYear & " " & periodCode & " " & theMode & " CA", Â
+			"Business Objects: " & theYear & " " & periodCode & " " & theMode & " lists CA", Â
 			periodCode & "_" & reportYear & "-" & reportMonth * 1 & "-" & reportDay & "_courseapproval.%EXT%") then return
 		
 		if not waitForWindow("UO Business Objects: Report Scheduling") then return
