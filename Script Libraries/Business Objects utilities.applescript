@@ -19,7 +19,7 @@ on getTeachingPeriod(validPeriods)
 		set periodCode to do shell script "echo " & periodCode & " | tr a-z A-Z"
 		if validPeriods does not contain periodCode then
 			display alert "Invalid period code Ò" & periodCode & "Ó entered" message "The period code must be one of " & periodString & "." as critical
-			return
+			return {missing value, missing value}
 		end if
 	end tell
 	tell script "List utilities" to set periodIndex to (listPosition(periodCode, validPeriods) - 1)
@@ -32,6 +32,29 @@ on getMode()
 	tell application "Safari" to Â
 		return button returned of (display dialog "Choose list mode" buttons {"Initial", "Cutoff", "Final"})
 end getMode
+
+-- Get a paper code from the user.
+on getPaperCode()
+	tell application "Safari" to Â
+		return text returned of (display dialog "Enter paper code:" default answer "INFOxxx")
+end getPaperCode
+
+-- Get results report type (data or proof) from the user.
+on getResultsReportType()
+	tell application "Safari"
+		set reportType to button returned of (display dialog Â
+			"Generate data (Excel), or proof (PDF)?" buttons {"Cancel", "Proof", "Data"} Â
+			default button "Data" cancel button "Cancel")
+	end tell
+	if reportType is "Data" then
+		set reportType to "data"
+		set reportTypeIndex to 2
+	else
+		set reportType to "proof"
+		set reportTypeIndex to 4
+	end if
+	return {reportType, reportTypeIndex}
+end getResultsReportType
 
 -- Execute a chunk of JavaScript in Safari.
 on runJavaScript(jsCode)
@@ -54,9 +77,9 @@ on checkBusinessObjects()
 end checkBusinessObjects
 
 -- Set value of a generic named element.
-on setNamedElement(elementName, subIndex, elementValue, method)
+on setNamedElement(elementName, subIndex, elementValue, callback)
 	set jsCode to "document.getElementsByName('" & elementName & "')[" & subIndex & "].value = '" & elementValue & "';"
-	set jsCode to jsCode & method & ";"
+	if callback is not "" then set jsCode to jsCode & callback & ";"
 	runJavaScript(jsCode)
 end setNamedElement
 
@@ -95,25 +118,52 @@ on pickFile(fieldNum, filePath)
 	setNamedElement("ReportParameterFile_" & fieldNum & "_", 0, filePath, "")
 end pickFile
 
--- Single-option pick list.
+-- Single-selection pick list.
 on chooseList(fieldNum, fieldValue)
 	setNamedElement("paramEd_defaults" & fieldNum, 0, fieldValue, "")
 end chooseList
 
--- Multiple option pick list.
+-- Multiple-selection pick list.
 on chooseMultipleList(fieldNum, fieldValue)
 	setNamedElement("paramEd_defaults" & fieldNum, 0, fieldValue, "paramEd[" & fieldNum & "].StoreDefault()")
 end chooseMultipleList
+
+-- Add a user-provided value to a list.
+on addTextToList(fieldNum, theText, fieldLabel)
+	setEditField(fieldNum, theText, fieldLabel)
+	runJavaScript("paramEd[" & fieldNum & "].StoreDiscrete();")
+end addTextToList
 
 -- Load values into a multiple option pick list from a file.
 -- Needed because we can't set the value of a file picker input element from JavaScript :(.
 on loadMultipleListFromFile(fieldNum, fieldLabel, filePath)
 	set itemList to paragraphs of (read filePath)
 	repeat with theItem in items 1 thru -2 of itemList -- skip empty line at end
-		setEditField(fieldNum, theItem, fieldLabel)
-		runJavaScript("paramEd[" & fieldNum & "].StoreDiscrete();")
+		addTextToList(fieldNum, theItem, fieldLabel)
 	end repeat
 end loadMultipleListFromFile
+
+on setFileFormat(formatIndex)
+	setNamedElement("ExportFormat", 0, formatIndex, "")
+end setFileFormat
+
+on emailReport(emailAddress, emailSubject, attachmentFilename)
+	setNamedElement("Destination", 0, 1, "")
+	runJavaScript("SubmitDestinations();")
+	
+	if not waitForWindow("UO Business Objects: Destination Options") then return false
+	
+	setNamedElement("RecipientAddresses", 0, emailAddress, "")
+	setNamedElement("Subject", 0, emailSubject, "")
+	setNamedElement("Attachment", 0, attachmentFilename, "")
+	runJavaScript("SmtpFields();")
+	
+	return true
+end emailReport
+
+on submitParameters()
+	runJavaScript("submitParamFrm();")
+end submitParameters
 
 -- Wait for a page with the specified title to appear. Includes a 10 second timeout in case the page stalls.
 on waitForWindow(windowTitle)
