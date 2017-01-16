@@ -7,7 +7,7 @@ end getYear
 -- Get a teaching period code from the user.
 on getTeachingPeriod(validPeriods)
 	if validPeriods is missing value then
-		set validPeriods to {"ALL", "SS", "S1", "S2", "FY", "N1", "N2"}
+		set validPeriods to {"All", "SS", "S1", "S2", "FY", "N"}
 	end if
 	set saveDelimiters to text item delimiters
 	set text item delimiters to ", "

@@ -1,5 +1,11 @@
 on run
 	set {year:reportYear, month:reportMonth, day:reportDay} to (current date)
+	set reportMonth to reportMonth * 1
+	if reportMonth < 10 then
+		set reportMonth to "0" & reportMonth
+	else
+		set reportMonth to reportMonth as text
+	end if
 	
 	tell script "Business Objects utilities"
 		if not checkBusinessObjects() then return
@@ -49,7 +55,7 @@ on run
 		-- Report Destination [email]
 		if not emailReport("nigel.stanger@otago.ac.nz", Â
 			"Business Objects: " & theYear & " " & periodCode & " " & theMode & " lists CL", Â
-			periodCode & "_" & reportYear & "-" & reportMonth * 1 & "-" & reportDay & "_classlist.%EXT%") then return
+			periodCode & "_" & reportYear & "-" & reportMonth & "-" & reportDay & "_classlist.%EXT%") then return
 		
 		if not waitForWindow("UO Business Objects: Report Scheduling") then return
 		
