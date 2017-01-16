@@ -18,8 +18,14 @@ on run
 		-- Teaching Period [user specified]
 		chooseMultipleList(2, periodIndex)
 		
-		-- Course Approval Status [Student declared (CA40) = 3]
-		chooseMultipleList(3, 3)
+		-- Course Approval Status [Student declared (CA40) = 3, UNLESS teaching period is "SS", then All = 0]
+		if periodCode is not "SS" then
+			chooseMultipleList(3, 3)
+		else
+			-- Course Approval Status usually never makes it to "student declared" in Summer School,
+			-- due to the limited time frame.
+			chooseMultipleList(3, 0)
+		end if
 		
 		-- Attendance Mode [Both = 3]
 		selectRadio(4, 3)
