@@ -6,6 +6,11 @@ on run
 	else
 		set reportMonth to reportMonth as text
 	end if
+	if reportDay < 10 then
+		set reportDay to "0" & reportDay
+	else
+		set reportDay to reportDay as text
+	end if
 	
 	tell script "Business Objects utilities"
 		if not checkBusinessObjects() then return
