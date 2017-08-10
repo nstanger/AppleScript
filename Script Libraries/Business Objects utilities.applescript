@@ -1,6 +1,12 @@
+global applicationName
+
+on init(appName)
+	set applicationName to appName
+end init
+
 -- Get the year from the user.
 on getYear()
-	tell application "Safari" to Â
+	tell application applicationName to Â
 		return text returned of (display dialog "Enter year:" default answer year of (current date))
 end getYear
 
@@ -14,7 +20,7 @@ on getTeachingPeriod(validPeriods)
 	set periodString to validPeriods as text
 	set text item delimiters to saveDelimiters
 	
-	tell application "Safari"
+	tell application applicationName
 		set periodCode to text returned of (display dialog "Enter teaching period (" & periodString & "):" default answer "")
 		set periodCode to do shell script "echo " & periodCode & " | tr a-z A-Z"
 		if validPeriods does not contain periodCode then
@@ -29,19 +35,19 @@ end getTeachingPeriod
 
 -- Get a results data loading mode from the user.
 on getMode()
-	tell application "Safari" to Â
+	tell application applicationName to Â
 		return button returned of (display dialog "Choose list mode" buttons {"Initial", "Cutoff", "Final"})
 end getMode
 
 -- Get a paper code from the user.
 on getPaperCode()
-	tell application "Safari" to Â
+	tell application applicationName to Â
 		return text returned of (display dialog "Enter paper code:" default answer "INFOxxx")
 end getPaperCode
 
 -- Get results report type (data or proof) from the user.
 on getResultsReportType()
-	tell application "Safari"
+	tell application applicationName
 		set reportType to button returned of (display dialog Â
 			"Generate data (Excel), or proof (PDF)?" buttons {"Cancel", "Proof", "Data"} Â
 			default button "Data" cancel button "Cancel")
@@ -58,7 +64,13 @@ end getResultsReportType
 
 -- Execute a chunk of JavaScript in Safari.
 on runJavaScript(jsCode)
-	tell document 1 of application "Safari" to return (do JavaScript jsCode)
+	if (applicationName is "Safari") then
+		tell application "Safari" to return (do JavaScript jsCode in front document)
+	else if (applicationName is "Vivaldi") then
+		tell application "Vivaldi" to return (execute javascript jsCode)
+	else
+		display alert "Invalid browser" message "Ò" & applicationName & "Ó is not a recognised browser." as critical
+	end if
 end runJavaScript
 
 -- Get title of current document.
@@ -79,8 +91,8 @@ end checkBusinessObjects
 -- Set value of a generic named element.
 on setNamedElement(elementName, subIndex, elementValue, callback)
 	set jsCode to "document.getElementsByName('" & elementName & "')[" & subIndex & "].value = '" & elementValue & "';"
-	if callback is not "" then set jsCode to jsCode & callback & ";"
 	runJavaScript(jsCode)
+	if callback is not "" then runJavaScript(callback & ";")
 end setNamedElement
 
 -- Enable check box or radio button.
@@ -97,7 +109,7 @@ end uncheckButton
 on selectRadio(fieldNum, index)
 	checkButton("RadioDefault_" & fieldNum, index)
 	setNamedElement("RadioDefault_" & fieldNum, index, index - 1, Â
-		"paramEd[" & fieldNum & "].LoadFromRadioDefault(" & index - 1 & ")")
+		"window.paramEd[" & fieldNum & "].LoadFromRadioDefault(" & index - 1 & ")")
 end selectRadio
 
 -- Editable text field.
@@ -110,13 +122,13 @@ end setTextField
 -- Input parameters from keyboard.
 on pickKeyboard(fieldNum)
 	checkButton("PickKeyboard_" & fieldNum, 0)
-	setNamedElement("PickKeyboard_" & fieldNum, 0, "on", "PickKeyboard(paramEd[" & fieldNum & "])")
+	setNamedElement("PickKeyboard_" & fieldNum, 0, "on", "window.PickKeyboard(paramEd[" & fieldNum & "])")
 end pickKeyboard
 
 -- Input parameters from a file.
 on pickFile(fieldNum, filePath)
 	checkButton("PickKeyboard_" & fieldNum, 1)
-	setNamedElement("PickKeyboard_" & fieldNum, 1, "on", "PickFile(paramEd[" & fieldNum & "])")
+	setNamedElement("PickKeyboard_" & fieldNum, 1, "on", "window.PickFile(paramEd[" & fieldNum & "])")
 	setNamedElement("ReportParameterFile_" & fieldNum & "_", 0, filePath, "")
 end pickFile
 
@@ -127,13 +139,13 @@ end chooseList
 
 -- Multiple-selection pick list.
 on chooseMultipleList(fieldNum, fieldValue)
-	setNamedElement("paramEd_defaults" & fieldNum, 0, fieldValue, "paramEd[" & fieldNum & "].StoreDefault()")
+	setNamedElement("paramEd_defaults" & fieldNum, 0, fieldValue, "window.paramEd[" & fieldNum & "].StoreDefault()")
 end chooseMultipleList
 
 -- Add a user-provided value to a list.
 on addTextToList(fieldNum, theText)
 	setTextField(fieldNum, theText)
-	runJavaScript("paramEd[" & fieldNum & "].StoreDiscrete();")
+	runJavaScript("window.paramEd[" & fieldNum & "].StoreDiscrete();")
 end addTextToList
 
 -- Load values into a multiple option pick list from a file.
@@ -151,20 +163,20 @@ end setFileFormat
 
 on emailReport(emailAddress, emailSubject, attachmentFilename)
 	setNamedElement("Destination", 0, 1, "")
-	runJavaScript("SubmitDestinations();")
+	runJavaScript("window.SubmitDestinations();")
 	
 	if not waitForWindow("UO Business Objects: Destination Options") then return false
 	
 	setNamedElement("RecipientAddresses", 0, emailAddress, "")
 	setNamedElement("Subject", 0, emailSubject, "")
 	setNamedElement("Attachment", 0, attachmentFilename, "")
-	runJavaScript("SmtpFields();")
+	runJavaScript("window.SmtpFields();")
 	
 	return true
 end emailReport
 
 on submitParameters()
-	runJavaScript("submitParamFrm();")
+	runJavaScript("window.submitParamFrm();")
 end submitParameters
 
 -- Wait for a page with the specified title to appear. Includes a 10 second timeout in case the page stalls.
@@ -173,7 +185,7 @@ on waitForWindow(windowTitle)
 	repeat
 		if runJavaScript("document.title") is windowTitle then return true
 		if timer > 10 then
-			tell application "Safari" to display alert "Timed out waiting for window Ò" & windowTitle & "Ó."
+			tell application applicationName to display alert "Timed out waiting for window Ò" & windowTitle & "Ó."
 			return false
 		end if
 		set timer to timer + 0.5
