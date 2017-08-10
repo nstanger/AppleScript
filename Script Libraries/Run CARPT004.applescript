@@ -33,7 +33,7 @@ on run
 		chooseMultipleList(3, 3)
 		
 		-- Attendance Mode [Both = 2]
-		selectRadio(4, 3)
+		selectRadio(4, 2)
 		
 		-- Location [Dunedin = 3]
 		chooseMultipleList(5, 3)
