@@ -42,7 +42,9 @@ end getMode
 -- Get a paper code from the user.
 on getPaperCode()
 	tell application applicationName to Â
-		return text returned of (display dialog "Enter paper code:" default answer "INFOxxx")
+		set paperCode to text returned of (display dialog "Enter paper code:" default answer "INFOxxx")
+	set paperCode to do shell script "echo " & paperCode & " | tr a-z A-Z"
+	return paperCode
 end getPaperCode
 
 -- Get results report type (data or proof) from the user.
