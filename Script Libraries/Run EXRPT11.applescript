@@ -46,8 +46,14 @@ on run
 		-- Include Graphs? [None = 0]
 		chooseList(9, 0)
 		
-		-- Include Names? [yes = 1]
-		selectRadio(10, 1)
+		-- Include Names? [no = 0, yes = 1]
+		-- Include names in data file for cross-checking, but
+		-- exclude from results summary to be signed and emailed.
+		if reportType is "data" then
+			selectRadio(10, 1)
+		else
+			selectRadio(10, 0)
+		end if
 		
 		-- Names Start With [Surname = 1]
 		selectRadio(11, 1)
