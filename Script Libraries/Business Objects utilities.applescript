@@ -64,12 +64,15 @@ on getResultsReportType()
 	return {reportType, reportTypeIndex}
 end getResultsReportType
 
--- Execute a chunk of JavaScript in Safari.
+-- Execute a chunk of JavaScript in a browser.
+-- Note:
+-- Vivaldi requires Tools > Enable JavaScript from Apple Events.
+-- Safari requires Develop > Allow JavaScript from Apple Events.
 on runJavaScript(jsCode)
 	if (applicationName is "Safari") then
 		tell application "Safari" to return (do JavaScript jsCode in front document)
 	else if (applicationName is "Vivaldi") then
-		tell application "Vivaldi" to return (execute javascript jsCode)
+		tell application "Vivaldi" to return (execute active tab of window 1 javascript jsCode)
 	else
 		display alert "Invalid browser" message "Ò" & applicationName & "Ó is not a recognised browser." as critical
 	end if

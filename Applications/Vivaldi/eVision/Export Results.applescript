@@ -1,6 +1,7 @@
 -- Execute a chunk of JavaScript in Vivaldi.
+-- Note: requires Tools > Enable JavaScript from Apple Events.
 on runJavaScript(jsCode)
-	tell document 1 of application "Vivaldi" to return (execute javascript jsCode)
+	tell application "Vivaldi" to return (execute active tab of window 1 javascript jsCode)
 end runJavaScript
 
 -- First Export Marks button
