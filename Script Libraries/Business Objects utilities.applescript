@@ -68,6 +68,7 @@ end getResultsReportType
 -- Note:
 -- Vivaldi requires Tools > Enable JavaScript from Apple Events.
 -- Safari requires Develop > Allow JavaScript from Apple Events.
+-- The latter will require turning off things like MagicPrefs!
 on runJavaScript(jsCode)
 	if (applicationName is "Safari") then
 		tell application "Safari" to return (do JavaScript jsCode in front document)

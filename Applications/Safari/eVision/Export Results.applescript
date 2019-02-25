@@ -1,5 +1,6 @@
 -- Execute a chunk of JavaScript in Safari.
 -- Note: Safari requires Develop > Allow JavaScript from Apple Events.
+-- This will require turning off things like MagicPrefs!
 on runJavaScript(jsCode)
 	tell document 1 of application "Safari" to return (do JavaScript jsCode)
 end runJavaScript
