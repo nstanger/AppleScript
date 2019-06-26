@@ -28,7 +28,15 @@ on getTeachingPeriod(validPeriods)
 			return {missing value, missing value}
 		end if
 	end tell
-	tell script "List utilities" to set periodIndex to (listPosition(periodCode, validPeriods) - 1)
+	if periodCode = "N" then
+		-- Non-standard period codes seem a bit weird — TTRPT02 fails to return anything
+		-- if you ask for period code “NS”. “ALL” works, however. Simple solution: return the
+		-- index for “All” instead of “N” (but still return the “N”, as that’s used to open the
+		-- correct paper list file and set the output file name).
+		tell script "List utilities" to set periodIndex to (listPosition("All", validPeriods) - 1)
+	else
+		tell script "List utilities" to set periodIndex to (listPosition(periodCode, validPeriods) - 1)
+	end if
 	
 	return {periodCode, periodIndex}
 end getTeachingPeriod
