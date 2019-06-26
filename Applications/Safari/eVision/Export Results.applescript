@@ -6,11 +6,11 @@ on runJavaScript(jsCode)
 end runJavaScript
 
 -- First Export Marks button
-runJavaScript("document.getElementsByName('BP113.DUMMY_B.MENSYS.1')[0].click();")
+runJavaScript("document.getElementsByName('BP113.DUMMY_B.MENSYS')[0].click();")
 delay 1
 
 -- Second Export Marks button
-runJavaScript("document.getElementsByName('BP102.DUMMY_B.MENSYS.1')[0].click();")
+runJavaScript("document.getElementsByName('BP102.DUMMY_B.MENSYS')[0].click();")
 delay 4
 
 -- View File link
@@ -20,10 +20,10 @@ runJavaScript("var links = document.getElementsByTagName('a'); var link = null; 
 delay 3
 
 -- First Back button
-runJavaScript("document.getElementsByName('BP101.DUMMY_B.MENSYS.1')[0].click();")
+runJavaScript("document.getElementsByName('BP101.DUMMY_B.MENSYS')[0].click();")
 delay 1
 
 -- Second Back button
-runJavaScript("document.getElementsByName('BP101.DUMMY_B.MENSYS.1')[0].click();")
+runJavaScript("document.getElementsByName('BP101.DUMMY_B.MENSYS')[0].click();")
 delay 1
 
