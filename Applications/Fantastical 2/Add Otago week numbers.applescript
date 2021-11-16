@@ -10,6 +10,7 @@ purposes but may not be republished without prior consent.
 
 If you find this script useful or have ideas for improving it, please let me know.
 
+NJS 2021-11-16: Updated for Fantastical 3.
 NJS 2018-05-28: Rewritten to work with Fantastical 2.
 NJS 2012-11-22: Otago now apparently works on "week containing 1 Jan", so the code has been reverted back to its original form.
 NJS 2010-02-17: Modified to work with iCal.
@@ -166,7 +167,7 @@ repeat with i from 0 to 51
 	set nextSunday to (firstSunday) + (weeks * i)
 	set {nsDay, nsMonth, nsYear} to {day, month, year} of nextSunday
 	
-	tell application "Fantastical 2"
+	tell application "Fantastical"
 		parse sentence "'Week " & weekNumber & " - Day " & dayNumber & "' on " & nsMonth & " " & nsDay & " " & nsYear calendarName "Week numbers" with add immediately
 		if (semesterString ­ "") then
 			parse sentence "'" & semesterString & "' on " & nsMonth & " " & nsDay & " " & nsYear calendarName "Week numbers" with add immediately
