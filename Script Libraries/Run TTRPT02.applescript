@@ -26,8 +26,12 @@ on run
 		-- Teaching Period [user specified]
 		chooseMultipleList(1, periodIndex)
 		
-		-- Course Approval Status [Student declared = 3]
-		chooseMultipleList(2, 3)
+		-- Course Approval Status [All = 0, Student declared = 3]
+		if periodCode is "SS" then
+			chooseMultipleList(2, 0)
+		else
+			chooseMultipleList(2, 3)
+		end if
 		
 		-- Academic Year [user specified]
 		-- This is a text field on this form.
