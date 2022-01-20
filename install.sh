@@ -6,7 +6,7 @@ then
     exit 0
 fi
 
-/opt/local/bin/gfind . -path ./.git -prune -o -name "*.applescript" -execdir osacompile -o "{}.scpt" "{}" \;
-/opt/local/bin/gfind . -path ./.git -prune -o -name "*.scpt" -execdir rename -force 's/\.applescript\.scpt/.scpt/' "{}" \;
-/opt/local/bin/rsync -av --exclude="*.applescript" Applications $HOME/Library/Scripts
-/opt/local/bin/rsync -av --exclude="*.applescript" "Script Libraries" $HOME/Library
+/usr/local/opt/findutils/libexec/gnubin/find . -path ./.git -prune -o -name "*.applescript" -execdir osacompile -o "{}.scpt" "{}" \;
+/usr/local/opt/findutils/libexec/gnubin/find . -path ./.git -prune -o -name "*.scpt" -execdir rename --force 's/\.applescript\.scpt/.scpt/' "{}" \;
+/usr/local/bin/rsync -av --exclude="*.applescript" Applications $HOME/Library/Scripts
+/usr/local/bin/rsync -av --exclude="*.applescript" "Script Libraries" $HOME/Library
