@@ -109,7 +109,7 @@ set firstSunday to date (text returned of theResult)
 set thePeriods to {Â
 	{id:"SS", name:"Summer School", period:{start:2, finish:7, break:{}}}, Â
 	{id:"S1", name:"Semester 1", period:{start:9, finish:22, break:{start:15, finish:15}}}, Â
-	{id:"S2", name:"Semester 2", period:{start:28, finish:41, break:{start:35, finish:35}}} Â
+	{id:"S2", name:"Semester 2", period:{start:29, finish:42, break:{start:36, finish:36}}} Â
 		}
 
 set minWeek to 1
