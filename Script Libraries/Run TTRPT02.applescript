@@ -21,7 +21,7 @@ on run
 		
 		-- Paper Codes [from file]
 		pickKeyboard(0)
-		loadMultipleListFromFile(0, "/Users/nstanger/Documents/Teaching/Results/papers" & periodCode & ".txt")
+		loadMultipleListFromFile(0, POSIX path of (path to documents folder as Unicode text) & "Teaching/Results/papers" & periodCode & ".txt")
 		
 		-- Teaching Period [user specified]
 		chooseMultipleList(1, periodIndex)
