@@ -10,6 +10,7 @@ purposes but may not be republished without prior consent.
 
 If you find this script useful or have ideas for improving it, please let me know.
 
+NJS 2026-07-29: Updated to use ISO 8601 week numbering and for 12 week semesters starting from 2027.
 NJS 2021-11-16: Updated for Fantastical 3.
 NJS 2018-05-28: Rewritten to work with Fantastical 2.
 NJS 2012-11-22: Otago now apparently works on "week containing 1 Jan", so the code has been reverted back to its original form.
@@ -58,130 +59,138 @@ end repeat
 
 
 -----------------------------------------------------------
--- What's the first day of the year?
--- Now, what's the first Sunday of the year?
--- This script will calculate week numbers
--- based on the first Sunday of the year.
+-- Calculate the first and last ISO 8601 weeks of the year
+-- (see https://en.wikipedia.org/wiki/ISO_week_date).
+-- First week contains 4 January, last week contains 28 December.
 --
--- NJS 2013-03-05: Moved this block before getting the teaching period details.
--- NJS 2012-11-22: Switched back to the first Sunday being the Sunday *before* 1 Jan.
--- NJS 2009-03-27: The first Sunday should be the Sunday *following* 1 Jan, so we need to flip the sense of the original code.
+-- Ugh, AppleScript numbers days from 1 = Sunday to 7 = Saturday,
+-- but ISO 8601 weeks start on Monday, so we need to rotate
+-- everything one day to the right.
+--
+-- NJS 2026-07-29: Rewrote week calculation from scratch.
 -----------------------------------------------------------
 
 set newYearsDay to (date ("1 January" & theYear))
 set lastNewYearsDay to date ("1 January " & (theYear - 1))
-set daysLastYear to (((date ("31 December " & (theYear - 1))) - lastNewYearsDay) div days) + 1
+set daysLastYear to ((date ("31 December " & (theYear - 1))) - lastNewYearsDay + days) div days
 
-set day1 to weekday of newYearsDay
+set fourthJanuary to (date ("4 January" & theYear))
+set fourthJanuaryDay to weekday of fourthJanuary
+set twentyEighthDecember to (date ("28 December" & theYear))
+set twentyEighthDecemberDay to weekday of twentyEighthDecember
 
-if day1 is Sunday then
-	set theSunday to 0
-else if day1 is Monday then
-	set theSunday to 1
-else if day1 is Tuesday then
-	set theSunday to 2
-else if day1 is Wednesday then
-	set theSunday to 3
-else if day1 is Thursday then
-	set theSunday to 4
-else if day1 is Friday then
-	set theSunday to 5
-else if day1 is Saturday then
-	set theSunday to 6
-end if
+set firstWeekStart to calculateIsoWeekStart(date ("4 January" & theYear))
+set lastWeekStart to calculateIsoWeekStart(date ("28 December" & theYear))
+set numWeeks to (lastWeekStart - firstWeekStart + weeks) div weeks
 
-set firstSunday to newYearsDay - (theSunday * days)
+-- Give the user the opportunity to check and correct the calculated date.
+set theResult to display dialog "I think week 1 starts on " & (date string of firstWeekStart) & ". Please modify below if this is incorrect." default answer (date string of firstWeekStart) with icon 1 with title "Confirm week 1 start date"
 
--- NJS 2012-08-02: Give the user the opportunity to check and correct the calculated date.
-set theResult to display dialog "I think week 1 starts on " & (date string of firstSunday) & ". Please correct below if this is incorrect." default answer (date string of firstSunday) with icon 1 with title "Confirm week 1 start date"
+set firstWeekStart to date (text returned of theResult)
 
-set firstSunday to date (text returned of theResult)
+set theResult to display dialog "I think week " & numWeeks & " starts on " & (date string of lastWeekStart) & ". Please modify below if this is incorrect." default answer (date string of lastWeekStart) with icon 1 with title "Confirm week " & numWeeks & " start date"
+
+set lastWeekStart to date (text returned of theResult)
 
 
 -----------------------------------------------------------
 -- Get details of teaching periods.
 -----------------------------------------------------------
 
--- List of records specifying each teaching period. Set break property to {} if there is no
+-- List of records specifying each teaching period. Set break properties to null if there is no
 -- break for a particular teaching period. The values in here reflect the usual values for
 -- Otago. Note that the first semester mid-semester break is variable due to the movement
 -- of Easter, but the rest are very unlikely to change.
 set thePeriods to {Â
-	{id:"SS", name:"Summer School", period:{start:2, finish:7, break:{}}}, Â
-	{id:"S1", name:"Semester 1", period:{start:9, finish:22, break:{start:15, finish:15}}}, Â
-	{id:"S2", name:"Semester 2", period:{start:29, finish:42, break:{start:36, finish:36}}}, Â
-	{id:"Pre-Xmas SS", name:"Pre-Christmas Summer School", period:{start:46, finish:50, break:{}}} Â
+	{id:"SS", name:"Summer School", periodStart:2, periodFinish:7, breakStart:null, breakFinish:null}, Â
+	{id:"S1", name:"Semester 1", periodStart:9, periodFinish:22, breakStart:15, breakFinish:16}, Â
+	{id:"S2", name:"Semester 2", periodStart:28, periodFinish:41, breakStart:35, breakFinish:36}, Â
+	{id:"Pre-Xmas SS", name:"Pre-Christmas Summer School", periodStart:46, periodFinish:50, breakStart:null, breakFinish:null} Â
 		}
 
-set minWeek to 1
-set maxWeek to 52
-
+-- Confirm period settings with the user and update as needed.
 repeat with thisPeriod in thePeriods
-	-- Create references to the various properties for ease of access.
-	-- Note that we can't use these for setting the value, only reading.
-	set theStart to (a reference to start of period of thisPeriod)
-	set theEnd to (a reference to finish of period of thisPeriod)
-	set theBreak to (a reference to break of period of thisPeriod)
-	if (theBreak is not {}) then
-		set theBreakStart to (a reference to start of break of period of thisPeriod)
-		set theBreakEnd to (a reference to finish of break of period of thisPeriod)
-	end if
-	
-	-- Remember, we can't use the reference for setting the value.
-	set start of period of thisPeriod to getProperty(name of thisPeriod, "start", theStart, theEnd, firstSunday)
-	set finish of period of thisPeriod to getProperty(name of thisPeriod, "end", theStart, theEnd, firstSunday)
-	if (contents of theBreak is not {}) then
-		set start of break of period of thisPeriod to getProperty(name of thisPeriod & " Mid-semester Break", "start", theBreakStart, theBreakEnd, firstSunday)
-		set finish of break of period of thisPeriod to getProperty(name of thisPeriod & " Mid-semester Break", "end", theBreakStart, theBreakEnd, firstSunday)
+	set periodStart of thisPeriod to getProperty(name of thisPeriod, "start", periodStart of thisPeriod, periodFinish of thisPeriod, firstWeekStart)
+	set periodFinish of thisPeriod to getProperty(name of thisPeriod, "end", periodStart of thisPeriod, periodFinish of thisPeriod, firstWeekStart)
+	if breakStart of thisPeriod is not null and breakFinish of thisPeriod is not null then
+		set breakStart of thisPeriod to getProperty(name of thisPeriod & " Mid-semester Break", "start", breakStart of thisPeriod, breakFinish of thisPeriod, firstWeekStart)
+		set breakFinish of thisPeriod to getProperty(name of thisPeriod & " Mid-semester Break", "end", breakStart of thisPeriod, breakFinish of thisPeriod, firstWeekStart)
 	end if
 end repeat
 
 
 -----------------------------------------------------------
--- Go populate the default calendar
--- with week numbers.
+-- Populate the calendar with week numbers.
 -----------------------------------------------------------
 
-set weekNumber to 1
-set dayNumber to ((firstSunday - lastNewYearsDay) div days + 1) mod daysLastYear
+set dayNumber to ((firstWeekStart - lastNewYearsDay + days) div days) mod daysLastYear
+set thisWeekStart to firstWeekStart
 
-repeat with i from 0 to 51
+repeat with weekNumber from 1 to numWeeks
 	
 	set semesterString to ""
 	
 	repeat with thisPeriod in thePeriods
-		if (break of period of thisPeriod is not {}) then
-			if ((weekNumber ³ start of period of thisPeriod) and (weekNumber < start of break of period of thisPeriod)) then
-				set semesterString to id of thisPeriod & " Week " & weekNumber - (start of period of thisPeriod) + 1
-			else if ((weekNumber > finish of break of period of thisPeriod) and (weekNumber ² finish of period of thisPeriod)) then
-				set semesterString to id of thisPeriod & " Week " & weekNumber - (start of period of thisPeriod)
-			else if ((weekNumber ³ start of break of period of thisPeriod) and (weekNumber ² finish of break of period of thisPeriod)) then
-				set semesterString to id of thisPeriod & " Mid-semester Break"
+		set periodId to id of thisPeriod
+		set periodStart to (periodStart of thisPeriod)
+		set periodFinish to (periodFinish of thisPeriod)
+		set breakStart to (breakStart of thisPeriod)
+		set breakFinish to (breakFinish of thisPeriod)
+		if (breakStart is not null and breakFinish is not null) then
+			if ((weekNumber ³ periodStart) and (weekNumber < breakStart)) then
+				set semesterString to periodId & " Week " & weekNumber - periodStart + 1
+			else if ((weekNumber > breakFinish) and (weekNumber ² periodFinish)) then
+				set semesterString to periodId & " Week " & weekNumber - periodStart - breakFinish + breakStart
+			else if ((weekNumber ³ breakStart) and (weekNumber ² breakFinish)) then
+				set semesterString to periodId & " Mid-semester Break Week " & weekNumber - breakStart + 1
 			end if
 		else
-			if ((weekNumber ³ start of period of thisPeriod) and (weekNumber ² finish of period of thisPeriod)) then
-				set semesterString to id of thisPeriod & " Week " & weekNumber - (start of period of thisPeriod) + 1
+			if ((weekNumber ³ periodStart) and (weekNumber ² periodFinish)) then
+				set semesterString to periodId & " Week " & weekNumber - periodStart + 1
 			end if
 		end if
 	end repeat
 	
-	set nextSunday to (firstSunday) + (weeks * i)
-	set {nsDay, nsMonth, nsYear} to {day, month, year} of nextSunday
+	set {calDay, calMonth, calYear} to {day, month, year} of thisWeekStart
+	
+	-- debugging
+	-- log "Week " & weekNumber & " - Day " & dayNumber & "' on " & calMonth & " " & calDay & " " & calYear
+	-- if (semesterString ­ "") then
+	--	log semesterString & "' on " & calMonth & " " & calDay & " " & calYear
+	-- end if
 	
 	tell application "Fantastical"
-		parse sentence "'Week " & weekNumber & " - Day " & dayNumber & "' on " & nsMonth & " " & nsDay & " " & nsYear calendarName "Week numbers" with add immediately
+		parse sentence "'Week " & weekNumber & " - Day " & dayNumber & "' on " & calMonth & " " & calDay & " " & calYear calendarName "Week numbers" with add immediately
 		if (semesterString ­ "") then
-			parse sentence "'" & semesterString & "' on " & nsMonth & " " & nsDay & " " & nsYear calendarName "Week numbers" with add immediately
+			parse sentence "'" & semesterString & "' on " & calMonth & " " & calDay & " " & calYear calendarName "Week numbers" with add immediately
 		end if
 	end tell
 	
-	set weekNumber to weekNumber + 1
 	set dayNumber to dayNumber + 7
 	if (dayNumber > daysLastYear) then
 		set dayNumber to dayNumber mod daysLastYear
 	end if
 	
+	set thisWeekStart to thisWeekStart + weeks
+	
 end repeat
+
+
+(*
+For a given date, return the Sunday before the Monday (ISO 8601 week day 1) for that week.
+We want the Sunday because that's a better place to insert the calendar entry. Annoyingly,
+AppleScript numbers week days from Sunday = 1 to Saturday = 7, but at least this isn't
+changed by the "first day of week" system setting.
+
+Arguments:
+	theDate	a valid date
+*)
+on calculateIsoWeekStart(theDate)
+	set theWeekDay to (weekday of theDate) as integer
+	-- shift sequence so Monday (2) maps to 1, and Sunday (1) maps to 7
+	set isoWeekDay to ((theWeekDay + 5) mod 7) + 1
+	return theDate - (isoWeekDay * days)
+end calculateIsoWeekStart
 
 
 (*
@@ -189,11 +198,11 @@ Get the value of a teaching period property from the user. The function does not
 until a valid week number is entered.
 
 Arguments:
-	periodName	user-visible name of the teaching period
-	periodBound	one of "start" or "end"
-	minWeek		the minimum possible week number for this teaching period
-	maxWeek		the maximum possible week number for this teaching period
-	firstSunday	date of first Sunday of the year
+	periodName		user-visible name of the teaching period
+	periodBound		one of "start" or "end"
+	minWeek			the minimum possible week number for this teaching period
+	maxWeek			the maximum possible week number for this teaching period
+	firstWeekStart	date of Sunday of the first week of the year
 
 NJS 2013-03-05:
 	¥ The default answer for the dialog box now depends on the period bound.
@@ -204,7 +213,7 @@ NJS 2013-03-05:
 	  and that then end week of a period is not earlier than the start week.
 	¥ Switched to alerts for errors.
 *)
-on getProperty(periodName, periodBound, minWeek, maxWeek, firstSunday)
+on getProperty(periodName, periodBound, minWeek, maxWeek, firstWeekStart)
 	set weekValid to false
 	repeat until weekValid
 		if (periodBound = "start") then
@@ -214,7 +223,7 @@ on getProperty(periodName, periodBound, minWeek, maxWeek, firstSunday)
 		end if
 		
 		-- What date does the target week start? This is included in the dialog box text below.
-		set weekStart to firstSunday + ((defaultAnswer - 1) * weeks)
+		set weekStart to firstWeekStart + ((defaultAnswer - 1) * weeks)
 		
 		set theResult to display dialog "In which week number does " & periodName & " " & periodBound & " (usually weeks " & minWeek & "Ð" & maxWeek & ")?" default answer (defaultAnswer as text) & " (starting " & (day of weekStart as text) & " " & (month of weekStart as text) & " " & (year of weekStart as text) & ")" with icon 1 with title "Set teaching period properties"
 		
